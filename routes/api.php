@@ -23,8 +23,8 @@ Route::group(['prefix' => 'auth'], function () {
         Route::get('me', 'AuthController@user');
 
         Route::get('history', 'TransactionsController@index');
-        Route::get('deposit', 'TransactionsController@deposit');
-        Route::get('withdraw', 'TransactionsController@withdraw');
+        Route::post('deposit', 'TransactionsController@deposit');
+        Route::post('withdraw', 'TransactionsController@withdraw');
     });
 });
 
