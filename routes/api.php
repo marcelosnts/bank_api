@@ -21,6 +21,10 @@ Route::group(['prefix' => 'auth'], function () {
     Route::group(['middleware' => 'auth:api'], function() {
         Route::get('logout', 'AuthController@logout');
         Route::get('me', 'AuthController@user');
+
+        Route::get('history', 'TransactionsController@index');
+        Route::get('deposit', 'TransactionsController@deposit');
+        Route::get('withdraw', 'TransactionsController@withdraw');
     });
 });
 
