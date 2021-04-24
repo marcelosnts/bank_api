@@ -3,16 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 use App\Transaction;
+use App\UserBalance;
 
 class TransactionsController extends Controller
 {
-    private $type = [
-        1 => 'Deposit',
-        2 => 'Withdraw'
-    ];
-
     public function history()
     {
         return;
@@ -27,16 +24,56 @@ class TransactionsController extends Controller
 
         $request->validate($rules);
 
+        $user_id = $request->user()->id;
+
         $transaction = new Transaction([
             'type' => $request->type,
             'value' => $request->value,
-            'user_id' => $request->user()->id
+            'user_id' => $user_id
         ]);
 
-        $transaction->save();
+        DB::beginTransaction();
 
+        if ($transaction->save()) {
+            $user_balance = UserBalance::where('user_id', $user_id)
+                ->first();
+
+            if (!$user_balance) {
+                $user_balance = new UserBalance([
+                    'balance' => 0,
+                    'user_id' => $user_id
+                ]);
+
+                if (!$user_balance->save()) {
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => "It was not possible to calculate your balance. Please try again later!"
+                    ], 500);
+                }
+            }
+
+            $user_balance->balance = UserBalance::calculateBalance(
+                $request->type,
+                $request->value,
+                $user_balance->balance
+            );
+
+            if (!$user_balance->save()) {
+                DB:rollBack();
+                return response()->json([
+                    'message' => "It was not possible to calculate your balance. Please try again later!"
+                ], 500);
+            }
+
+            DB::commit();
+            return response()->json([
+                'message' =>  Transaction::getTypeText($request->type) . " submited!"
+            ], 201);
+        }
+
+        DB::rollBack();
         return response()->json([
-            'message' => "{$this->type[$request->type]} submited!"
-        ], 201);
+            'message' => "Something went wrong. Please try again later!"
+        ], 500);
     }
 }
