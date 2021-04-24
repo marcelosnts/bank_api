@@ -24,11 +24,9 @@ Route::group(['prefix' => 'auth'], function () {
     });
 });
 
-Route::group(['prefix' => 'transactions'], function() {
-    Route::group(['middleware' => 'auth:api'], function() {
-        Route::get('history', 'TransactionsController@index');
-        Route::post('new', 'TransactionsController@new');
-    });
+Route::group(['prefix' => 'transactions', 'middleware' => 'auth:api'], function() {
+    Route::get('history', 'TransactionsController@index');
+    Route::post('new', 'TransactionsController@new');
 });
 
 // Route::middleware('auth:api')->get('/user', function (Request $request) {
