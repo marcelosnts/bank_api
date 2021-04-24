@@ -25,7 +25,7 @@ Route::group(['prefix' => 'auth'], function () {
 });
 
 Route::group(['prefix' => 'transactions', 'middleware' => 'auth:api'], function() {
-    Route::get('history', 'TransactionsController@index');
+    Route::get('history', 'TransactionsController@history');
     Route::post('new', 'TransactionsController@new');
 });
 
