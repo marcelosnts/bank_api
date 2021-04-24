@@ -10,9 +10,15 @@ use App\UserBalance;
 
 class TransactionsController extends Controller
 {
-    public function history()
+    public function history(Request $request)
     {
-        return;
+        $user_id = $request->user()->id;
+        $transactions = Transaction::where(compact('user_id'))->get();
+        $balance = UserBalance::where(compact('user_id'))->first();
+
+        return response()->json([
+            compact('transactions', 'balance')
+        ], 201);
     }
 
     public function new(Request $request)
@@ -35,7 +41,7 @@ class TransactionsController extends Controller
         DB::beginTransaction();
 
         if ($transaction->save()) {
-            $user_balance = UserBalance::where('user_id', $user_id)
+            $user_balance = UserBalance::where(compact('user_id'))
                 ->first();
 
             if (!$user_balance) {
