@@ -18,7 +18,6 @@ class TransactionsController extends Controller
 
         $deposits = array_reduce($transactions->toArray(), function($accumulator, $transaction){
             if ($transaction['type'] == Transaction::DEPOSIT) {
-                var_dump($accumulator);
                 return $accumulator += floatval($transaction['value']);
             }
 
@@ -27,7 +26,6 @@ class TransactionsController extends Controller
 
         $withdraws = array_reduce($transactions->toArray(), function($accumulator, $transaction){
             if ($transaction['type'] == Transaction::WITHDRAW) {
-                var_dump($accumulator);
                 return $accumulator -= floatval($transaction['value']);
             }
 
@@ -35,9 +33,9 @@ class TransactionsController extends Controller
         }, 0);
 
         $status = 200;
-        return response()->json([
+        return response()->json(
             compact('transactions', 'balance', 'deposits', 'withdraws', 'status')
-        ], 200);
+        , 200);
     }
 
     public function new(Request $request)
