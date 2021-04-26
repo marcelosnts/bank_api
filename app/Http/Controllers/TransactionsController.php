@@ -16,9 +16,28 @@ class TransactionsController extends Controller
         $transactions = Transaction::where(compact('user_id'))->get();
         $balance = UserBalance::where(compact('user_id'))->first();
 
+        $deposits = array_reduce($transactions->toArray(), function($accumulator, $transaction){
+            if ($transaction['type'] == Transaction::DEPOSIT) {
+                var_dump($accumulator);
+                return $accumulator += floatval($transaction['value']);
+            }
+
+            return $accumulator;
+        }, 0);
+
+        $withdraws = array_reduce($transactions->toArray(), function($accumulator, $transaction){
+            if ($transaction['type'] == Transaction::WITHDRAW) {
+                var_dump($accumulator);
+                return $accumulator -= floatval($transaction['value']);
+            }
+
+            return $accumulator;
+        }, 0);
+
+        $status = 200;
         return response()->json([
-            compact('transactions', 'balance')
-        ], 201);
+            compact('transactions', 'balance', 'deposits', 'withdraws', 'status')
+        ], 200);
     }
 
     public function new(Request $request)
@@ -74,7 +93,7 @@ class TransactionsController extends Controller
             DB::commit();
             return response()->json([
                 'message' =>  Transaction::getTypeText($request->type) . " submited!"
-            ], 201);
+            ], 200);
         }
 
         DB::rollBack();
