@@ -14,7 +14,8 @@ class TransactionsController extends Controller
     {
         $user_id = $request->user()->id;
         $transactions = Transaction::where(compact('user_id'))->get();
-        $balance = UserBalance::where(compact('user_id'))->first();
+        $user_balance = UserBalance::where(compact('user_id'))->first();
+        $balance = floatval($user_balance->balance);
 
         $deposits = array_reduce($transactions->toArray(), function($accumulator, $transaction){
             if ($transaction['type'] == Transaction::DEPOSIT) {
