@@ -13,7 +13,7 @@ class TransactionsController extends Controller
     public function history(Request $request)
     {
         $user_id = $request->user()->id;
-        $transactions = Transaction::where(compact('user_id'))->get();
+        $transactions = Transaction::where(compact('user_id'))->orderByDesc('id')->get();
         $user_balance = UserBalance::where(compact('user_id'))->first();
         $balance = floatval($user_balance->balance);
 
