@@ -1,4 +1,4 @@
-## Bank API
+# Bank API
 
 Built on: 
 - Laravel 7.0
@@ -9,7 +9,7 @@ You may import the HAR file **api_doc.har** on project root to your API
 
 client to take a look at the api endpoints;
 
-# Running the project
+## Running the project
 
 Step 1.
 
