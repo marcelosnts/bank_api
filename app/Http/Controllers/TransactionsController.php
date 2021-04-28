@@ -14,24 +14,30 @@ class TransactionsController extends Controller
     {
         $user_id = $request->user()->id;
         $transactions = Transaction::where(compact('user_id'))->orderByDesc('id')->get();
-        $user_balance = UserBalance::where(compact('user_id'))->first();
-        $balance = floatval($user_balance->balance);
+        $balance = 0;
+        $deposits = 0;
+        $withdraws = 0;
 
-        $deposits = array_reduce($transactions->toArray(), function($accumulator, $transaction){
-            if ($transaction['type'] == Transaction::DEPOSIT) {
-                return $accumulator += floatval($transaction['value']);
-            }
+        if (!!count($transactions)) {
+            $user_balance = UserBalance::where(compact('user_id'))->first();
+            $balance = round(floatval($user_balance->balance), 2);
 
-            return $accumulator;
-        }, 0);
+            $deposits = round(array_reduce($transactions->toArray(), function($accumulator, $transaction){
+                if ($transaction['type'] == Transaction::DEPOSIT) {
+                    return $accumulator += floatval($transaction['value']);
+                }
 
-        $withdraws = array_reduce($transactions->toArray(), function($accumulator, $transaction){
-            if ($transaction['type'] == Transaction::WITHDRAW) {
-                return $accumulator -= floatval($transaction['value']);
-            }
+                return $accumulator;
+            }, 0), 2);
 
-            return $accumulator;
-        }, 0);
+            $withdraws = round(array_reduce($transactions->toArray(), function($accumulator, $transaction){
+                if ($transaction['type'] == Transaction::WITHDRAW) {
+                    return $accumulator -= floatval($transaction['value']);
+                }
+
+                return $accumulator;
+            }, 0), 2);
+        }
 
         $status = 200;
         return response()->json(
@@ -71,6 +77,7 @@ class TransactionsController extends Controller
                 if (!$user_balance->save()) {
                     DB::rollBack();
                     return response()->json([
+                        'status' => 500,
                         'message' => "It was not possible to calculate your balance. Please try again later!"
                     ], 500);
                 }
@@ -85,18 +92,21 @@ class TransactionsController extends Controller
             if (!$user_balance->save()) {
                 DB:rollBack();
                 return response()->json([
+                    'status' => 500,
                     'message' => "It was not possible to calculate your balance. Please try again later!"
                 ], 500);
             }
 
             DB::commit();
             return response()->json([
+                'status' => 200,
                 'message' =>  Transaction::getTypeText($request->type) . " submited!"
             ], 200);
         }
 
         DB::rollBack();
         return response()->json([
+            'status' => 500,
             'message' => "Something went wrong. Please try again later!"
         ], 500);
     }
